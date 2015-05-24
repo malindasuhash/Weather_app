@@ -34,10 +34,11 @@ public class WeatherOps {
         public void Finished() {
             mAsyncTaskStillExecuting = false;
 
-            // The finish method is called from onPostExecute in AsyncTask.
-            // Therefore the following line is executed in UI thread.
-            // No need to schedule the call using runOnUI...
+            // The callback is currently is being received
+            // in the UI thread.
             mProgressBar.get().setVisibility(View.INVISIBLE);
+            mGetWeatherSync.get().setEnabled(true);
+            mGetWeatherAsync.get().setEnabled(true);
         }
     };
 
@@ -94,6 +95,8 @@ public class WeatherOps {
     {
         mLocation = new WeakReference<>((EditText)mWeatherActivity.get().findViewById(R.id.location));
         mProgressBar = new WeakReference<>((ProgressBar)mWeatherActivity.get().findViewById(R.id.progress));
+        mGetWeatherAsync = new WeakReference<>((Button)mWeatherActivity.get().findViewById(R.id.weatherAsyc));
+        mGetWeatherSync = new WeakReference<>((Button)mWeatherActivity.get().findViewById(R.id.weatherSync));
         mProgressBar.get().setVisibility(mAsyncTaskStillExecuting ? View.VISIBLE : View.INVISIBLE);
     }
 
@@ -102,6 +105,11 @@ public class WeatherOps {
         Log.i(TAG, "Executing sync task get whether data.");
 
         mProgressBar.get().setVisibility(View.VISIBLE);
+        mGetWeatherAsync.get().setEnabled(false);
+        mGetWeatherSync.get().setEnabled(false);
+        Log.i(TAG, "Disabled both buttons");
+
+        Log.i(TAG, "Stating the async task.");
         WeatherGetterAsyncTask weatherGetterAsyncTask = new WeatherGetterAsyncTask(state);
         weatherGetterAsyncTask.execute("hello");
 
