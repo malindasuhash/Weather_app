@@ -1,4 +1,4 @@
-package app.com.example.malindasuhash.weatherapptake1;
+package app.com.example.malindasuhash.weatherapptake1.activities;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -7,6 +7,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import app.com.example.malindasuhash.weatherapptake1.R;
+import app.com.example.malindasuhash.weatherapptake1.WeatherOps;
 import app.com.example.malindasuhash.weatherapptake1.utils.RetainedFragmentManager;
 
 

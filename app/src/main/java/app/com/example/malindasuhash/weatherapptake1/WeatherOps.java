@@ -9,6 +9,8 @@ import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
 
+import app.com.example.malindasuhash.weatherapptake1.activities.WeatherActivity;
+
 /**
  * This class contains the operations of the weather application.
  * The goal is to remove keep these operations out of the
@@ -35,10 +37,16 @@ public class WeatherOps {
             mAsyncTaskStillExecuting = false;
 
             // The callback is currently is being received
-            // in the UI thread.
-            mProgressBar.get().setVisibility(View.INVISIBLE);
-            mGetWeatherSync.get().setEnabled(true);
-            mGetWeatherAsync.get().setEnabled(true);
+            // in the UI thread. However just to be sure queueing
+            // in UI thread.
+            mWeatherActivity.get().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mProgressBar.get().setVisibility(View.INVISIBLE);
+                    mGetWeatherSync.get().setEnabled(true);
+                    mGetWeatherAsync.get().setEnabled(true);
+                }
+            });
         }
     };
 
@@ -93,10 +101,12 @@ public class WeatherOps {
 
     private void initialiseFields()
     {
+        Log.i(TAG, "Initialising fields as weak references.");
         mLocation = new WeakReference<>((EditText)mWeatherActivity.get().findViewById(R.id.location));
         mProgressBar = new WeakReference<>((ProgressBar)mWeatherActivity.get().findViewById(R.id.progress));
         mGetWeatherAsync = new WeakReference<>((Button)mWeatherActivity.get().findViewById(R.id.weatherAsyc));
         mGetWeatherSync = new WeakReference<>((Button)mWeatherActivity.get().findViewById(R.id.weatherSync));
+
         mProgressBar.get().setVisibility(mAsyncTaskStillExecuting ? View.VISIBLE : View.INVISIBLE);
     }
 
