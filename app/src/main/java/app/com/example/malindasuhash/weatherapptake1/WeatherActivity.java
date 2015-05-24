@@ -88,7 +88,7 @@ public class WeatherActivity extends Activity {
             mWeatherOps = mRetainedFragmentManager.get(weatherFragmentTagName);
 
             // This check shouldn't be necessary under normal
-            // circumtances, but it's better to lose state than to
+            // circumstances, but it's better to lose state than to
             // crash!
             if (mWeatherOps == null) {
                 mWeatherOps = new WeatherOps(this);
