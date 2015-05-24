@@ -36,13 +36,12 @@ public class WeatherActivity extends Activity {
 
     public void getWeatherSync(View view) {
         Log.i(TAG, "Getting weather sync");
-        mWeatherOps.getCurrentWeatherSync();
+        mWeatherOps.getCurrentWeather();
     }
 
     public void getWeatherAsync(View view)
     {
         Log.i(TAG, "Getting weather async");
-        mWeatherOps.getCurrentWeatherAsync();
     }
 
     @Override

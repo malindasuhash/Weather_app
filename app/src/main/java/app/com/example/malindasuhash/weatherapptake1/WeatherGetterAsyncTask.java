@@ -1,22 +1,30 @@
 package app.com.example.malindasuhash.weatherapptake1;
 
 import android.os.AsyncTask;
+import android.os.RemoteException;
 import android.util.Log;
+
+import java.util.List;
+
+import app.com.example.malindasuhash.weatherapptake1.aidl.WeatherCall;
+import app.com.example.malindasuhash.weatherapptake1.aidl.WeatherData;
 
 /**
  * Async task for calling the WeatherServiceSync so that the call
  * does not block the UI.
  */
-public class WeatherGetterAsyncTask extends AsyncTask<String, String, String> {
+public class WeatherGetterAsyncTask extends AsyncTask<String, List<WeatherData>, List<WeatherData>> {
 
     private final String TAG = this.getClass().getSimpleName();
 
     private TaskExecutionState mTaskExecutionState;
+    private WeatherCall mWeatherCall;
 
-    public WeatherGetterAsyncTask(TaskExecutionState taskExecutionState)
+    public WeatherGetterAsyncTask(TaskExecutionState taskExecutionState, WeatherCall weatherCall)
     {
         super();
         this.mTaskExecutionState = taskExecutionState;
+        this.mWeatherCall = weatherCall;
     }
 
     protected void onPreExecute() {
@@ -26,23 +34,25 @@ public class WeatherGetterAsyncTask extends AsyncTask<String, String, String> {
     }
 
     @Override
-    protected String doInBackground(String... strings) {
+    protected List<WeatherData> doInBackground(String... strings) {
         try {
-            Thread.sleep(8000l);
-            Log.i(TAG, "Finished working");
-        } catch (InterruptedException e) {
+            List<WeatherData> data = mWeatherCall.getCurrentWeather(strings[0]);
+            return data;
+        } catch (RemoteException e) {
             e.printStackTrace();
         }
         return null;
     }
 
     @Override
-    protected void onPostExecute(String s) {
+    protected void onPostExecute(List<WeatherData> weatherDatas) {
+        super.onPostExecute(weatherDatas);
+        Log.i(TAG, "Done work in Sync");
         mTaskExecutionState.Finished();
     }
 
     interface TaskExecutionState
     {
-        public void Finished();
+        void Finished();
     }
 }

@@ -1,32 +1,41 @@
 package app.com.example.malindasuhash.weatherapptake1;
 
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
+import java.util.List;
 
 import app.com.example.malindasuhash.weatherapptake1.activities.WeatherActivity;
+import app.com.example.malindasuhash.weatherapptake1.aidl.WeatherCall;
+import app.com.example.malindasuhash.weatherapptake1.aidl.WeatherData;
+import app.com.example.malindasuhash.weatherapptake1.services.WeatherServiceSync;
 
 /**
  * This class contains the operations of the weather application.
  * The goal is to remove keep these operations out of the
  * activity and retained using the RetainedFragmentManager.
  */
-public class WeatherOps {
+public class WeatherOps extends WeatherOpsImpl {
 
     private final String TAG = this.getClass().getSimpleName();
-
-    private WeakReference<WeatherActivity> mWeatherActivity;
 
     private WeakReference<EditText> mLocation;
     private WeakReference<ProgressBar> mProgressBar;
 
     private WeakReference<Button> mGetWeatherSync;
     private WeakReference<Button> mGetWeatherAsync;
+
+    private List<WeatherData> mSyncWeatherData;
+    private WeatherCall mWeatherCall;
 
     private volatile boolean mAsyncTaskStillExecuting;
 
@@ -50,42 +59,32 @@ public class WeatherOps {
         }
     };
 
+    private ServiceConnection mSyncServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            Log.i(TAG, "Weather sync callback received.");
+
+            mWeatherCall = WeatherCall.Stub.asInterface(iBinder);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            Log.i(TAG, "Weather sync disconnected.");
+            mWeatherCall = null;
+        }
+    };
+
     public WeatherOps(WeatherActivity weatherActivity)
     {
-        this.mWeatherActivity = new WeakReference<>(weatherActivity);
+        super(weatherActivity);
 
         initialiseFields();
+        bindToSyncService();
     }
 
-    public void getCurrentWeatherSync()
-    {
-        if (validate())
-        {
-            runTask();
-        }
-    }
-
-    public void getCurrentWeatherAsync()
-    {
-        if (validate())
-        {
-            // Do work
-        }
-    }
-
-    private boolean validate()
-    {
-        String location = mLocation.get().getText().toString();
-
-        Log.i(TAG, "Validating " + location);
-
-        if (location.trim().length() == 0)
-        {
-            Toast.makeText(mWeatherActivity.get(), R.string.location_cannot_be_empty, Toast.LENGTH_SHORT).show();
-            return false;
-        }
-
-        return true;
+    @Override
+    protected void DoWork() {
+        runInitTask();
     }
 
     public void onConfigurationChange(WeatherActivity activity)
@@ -110,7 +109,7 @@ public class WeatherOps {
         mProgressBar.get().setVisibility(mAsyncTaskStillExecuting ? View.VISIBLE : View.INVISIBLE);
     }
 
-    private void runTask()
+    private void runInitTask()
     {
         Log.i(TAG, "Executing sync task get whether data.");
 
@@ -120,9 +119,18 @@ public class WeatherOps {
         Log.i(TAG, "Disabled both buttons");
 
         Log.i(TAG, "Stating the async task.");
-        WeatherGetterAsyncTask weatherGetterAsyncTask = new WeatherGetterAsyncTask(state);
+        WeatherGetterAsyncTask weatherGetterAsyncTask = new WeatherGetterAsyncTask(state, mWeatherCall);
         weatherGetterAsyncTask.execute("hello");
 
         mAsyncTaskStillExecuting = true;
+    }
+
+    private void bindToSyncService()
+    {
+        Log.i(TAG, "Binding to the Sync weather service.");
+
+        Intent intent = WeatherServiceSync.makeIntent(mWeatherActivity.get());
+
+        mWeatherActivity.get().bindService(intent, mSyncServiceConnection, Context.BIND_AUTO_CREATE);
     }
 }
