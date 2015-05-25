@@ -5,4 +5,5 @@
     <string name="sync_button">Get (Sync)</string>
     <string name="async_button">Get (Async)</string>
     <string name="location_cannot_be_empty">The location cannot be empty!</string>
+    <string name="weather_name">Name</string>
 </resources>

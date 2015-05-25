@@ -72,6 +72,11 @@ public class WeatherData implements Parcelable {
         mSunset = sunset;
     }
 
+    public String getName()
+    {
+        return mName;
+    }
+
     /**
      * Provides a printable representation of this object.
      */

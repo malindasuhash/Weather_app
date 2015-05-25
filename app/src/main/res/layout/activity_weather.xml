@@ -46,5 +46,30 @@
         android:layout_centerHorizontal="true"
         android:visibility="invisible" />
 
+    <LinearLayout
+        android:orientation="vertical"
+        android:id="@+id/desc"
+        android:visibility="invisible"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/linearLayout"
+        android:layout_alignParentStart="true">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="Name"
+            android:id="@+id/textView" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:id="@+id/weather_name"
+            android:paddingLeft="30dp" />
+
+    </LinearLayout>
+
 
 </RelativeLayout>

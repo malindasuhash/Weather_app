@@ -43,7 +43,7 @@ public class WeatherGetterAsyncTask extends AsyncTask<String, List<WeatherData>,
     protected void onPostExecute(List<WeatherData> weatherDatas) {
         super.onPostExecute(weatherDatas);
         Log.i(TAG, "Done work in Sync ");
-        mTaskExecutionState.Finished();
+        mTaskExecutionState.Finished(weatherDatas);
     }
 
     /**
@@ -51,6 +51,6 @@ public class WeatherGetterAsyncTask extends AsyncTask<String, List<WeatherData>,
      */
     interface TaskExecutionState
     {
-        void Finished();
+        void Finished(List<WeatherData> data);
     }
 }

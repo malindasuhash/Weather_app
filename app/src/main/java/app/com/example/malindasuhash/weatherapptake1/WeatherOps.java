@@ -9,7 +9,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -33,6 +35,9 @@ public class WeatherOps extends WeatherOpsImpl {
 
     private WeakReference<Button> mGetWeatherSync;
     private WeakReference<Button> mGetWeatherAsync;
+    private WeakReference<ListView> mSummaryList;
+    private WeakReference<TextView> mWeatherName;
+    private WeakReference<View> mSummary;
 
     private List<WeatherData> mSyncWeatherData;
     private WeatherCall mWeatherCall;
@@ -42,7 +47,7 @@ public class WeatherOps extends WeatherOpsImpl {
     private WeatherGetterAsyncTask.TaskExecutionState state = new WeatherGetterAsyncTask.TaskExecutionState() {
 
         @Override
-        public void Finished() {
+        public void Finished(final List<WeatherData> data) {
             mAsyncTaskStillExecuting = false;
 
             // The callback is currently is being received
@@ -54,6 +59,11 @@ public class WeatherOps extends WeatherOpsImpl {
                     mProgressBar.get().setVisibility(View.INVISIBLE);
                     mGetWeatherSync.get().setEnabled(true);
                     mGetWeatherAsync.get().setEnabled(true);
+
+                    if (data != null) {
+                        mWeatherName.get().setText(data.get(0).getName());
+                        mSummary.get().setVisibility(View.VISIBLE);
+                    }
                 }
             });
         }
@@ -114,8 +124,11 @@ public class WeatherOps extends WeatherOpsImpl {
         mProgressBar = new WeakReference<>((ProgressBar)mWeatherActivity.get().findViewById(R.id.progress));
         mGetWeatherAsync = new WeakReference<>((Button)mWeatherActivity.get().findViewById(R.id.weatherAsyc));
         mGetWeatherSync = new WeakReference<>((Button)mWeatherActivity.get().findViewById(R.id.weatherSync));
+        mWeatherName = new WeakReference<>((TextView)mWeatherActivity.get().findViewById(R.id.weather_name));
+        mSummary = new WeakReference<>((View)mWeatherActivity.get().findViewById(R.id.desc));
 
         mProgressBar.get().setVisibility(mAsyncTaskStillExecuting ? View.VISIBLE : View.INVISIBLE);
+        mSummary.get().setVisibility(View.VISIBLE);
     }
 
     private void runInitTask()
