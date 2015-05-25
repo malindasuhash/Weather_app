@@ -35,6 +35,16 @@ public abstract class WeatherOpsImpl {
 
     protected abstract void DoWork();
 
+    public void stop()
+    {
+        // For any cleanup work.
+    }
+
+    public void onConfigurationChange(WeatherActivity activity)
+    {
+        // NOP for the moment.
+    }
+
     private boolean validate()
     {
         String location = mLocation.get().getText().toString();

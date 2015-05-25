@@ -87,6 +87,7 @@ public class WeatherOps extends WeatherOpsImpl {
         runInitTask();
     }
 
+    @Override
     public void onConfigurationChange(WeatherActivity activity)
     {
         Log.i(TAG, "Handling configuration change.");
@@ -96,6 +97,14 @@ public class WeatherOps extends WeatherOpsImpl {
         Log.i(TAG, "Initialising fields.");
 
         initialiseFields();
+    }
+
+    @Override
+    public void stop() {
+        super.stop();
+
+        Log.i(TAG, "Stopping Sync service.");
+        unbindFromSyncService();
     }
 
     private void initialiseFields()
@@ -120,7 +129,7 @@ public class WeatherOps extends WeatherOpsImpl {
 
         Log.i(TAG, "Stating the async task.");
         WeatherGetterAsyncTask weatherGetterAsyncTask = new WeatherGetterAsyncTask(state, mWeatherCall);
-        weatherGetterAsyncTask.execute("hello");
+        weatherGetterAsyncTask.execute(mLocation.get().getText().toString());
 
         mAsyncTaskStillExecuting = true;
     }
@@ -132,5 +141,12 @@ public class WeatherOps extends WeatherOpsImpl {
         Intent intent = WeatherServiceSync.makeIntent(mWeatherActivity.get());
 
         mWeatherActivity.get().bindService(intent, mSyncServiceConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    private void unbindFromSyncService()
+    {
+        Log.i(TAG, "unbinding from the Sync weather service.");
+
+        mWeatherActivity.get().unbindService(mSyncServiceConnection);
     }
 }
