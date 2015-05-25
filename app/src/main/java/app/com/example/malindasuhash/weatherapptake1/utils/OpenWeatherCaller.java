@@ -11,7 +11,8 @@ import app.com.example.malindasuhash.weatherapptake1.aidl.WeatherData;
 import app.com.example.malindasuhash.weatherapptake1.json.WeatherJsonDataParser;
 
 /**
- * Responsible for calling the Open weather service and parsing the results.
+ * Responsible for calling the Open weather service and parse the result
+ * using WeatherJsonDataParser.
  */
 public class OpenWeatherCaller {
 

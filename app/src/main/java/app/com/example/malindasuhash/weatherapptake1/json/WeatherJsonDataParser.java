@@ -13,23 +13,20 @@ import java.util.List;
 import app.com.example.malindasuhash.weatherapptake1.aidl.WeatherData;
 
 /**
- * Parse the response of the web service call.
+ * Responsible for parsing the Open weather data.
+ * Code adapted from:
+ * https://github.com/douglascraigschmidt/POSA-15/blob/master/ex/AcronymApplication/src/vandy/mooc/jsonacronym/AcronymJSONParser.java
  */
 public class WeatherJsonDataParser {
 
     final String TAG = this.getClass().getName();
-
-    private final String coord = "coord";
-    private final String wname = "name";
-    private final String wind = "wind";
-    private final String sys = "sys";
 
     public List<WeatherData> parseJsonStream(InputStream inputStream)
             throws IOException {
 
         // Create a JsonReader for the inputStream.
         try (JsonReader reader = new JsonReader(new InputStreamReader(inputStream, "UTF-8"))) {
-            Log.i(TAG, "Parsing the results returned as an array");
+            Log.i(TAG, "Parsing the results.");
 
             List<WeatherData> data = parseWeatherServiceResults(reader);
 
@@ -72,7 +69,7 @@ public class WeatherJsonDataParser {
                 switch (name) {
                     case "coord":
                     case "weather":
-                        reader.skipValue();
+                        reader.skipValue(); // We do not worry about these.
                         break;
 
                     case "sys":
@@ -94,7 +91,7 @@ public class WeatherJsonDataParser {
 
                     default:
                         Log.i(TAG, "weird problem with " + name + " field");
-                        reader.skipValue();
+                        reader.skipValue(); // Again, we simply interested in key fields.
                         break;
                 }
 
@@ -102,6 +99,12 @@ public class WeatherJsonDataParser {
             }
         } finally {
             Log.i(TAG, "Reading complete.");
+        }
+
+        if (weatherName == null)
+        {
+            Log.i(TAG, "Looks like the city was not found.");
+            return null;
         }
 
         WeatherData weatherData = new WeatherData(weatherName, speedAndDeg.Item1, speedAndDeg.Item2,
@@ -215,6 +218,9 @@ public class WeatherJsonDataParser {
         return info;
     }
 
+    /**
+     * Very simple Tuple implementation.
+     */
     private class Tuple<T, U>
     {
         public T Item1;

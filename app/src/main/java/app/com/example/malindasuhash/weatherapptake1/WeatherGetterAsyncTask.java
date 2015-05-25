@@ -27,12 +27,6 @@ public class WeatherGetterAsyncTask extends AsyncTask<String, List<WeatherData>,
         this.mWeatherCall = weatherCall;
     }
 
-    protected void onPreExecute() {
-        super.onPreExecute();
-
-        Log.i(TAG, "In OnPreExecute showing the progress window.");
-    }
-
     @Override
     protected List<WeatherData> doInBackground(String... strings) {
         try {
@@ -48,10 +42,13 @@ public class WeatherGetterAsyncTask extends AsyncTask<String, List<WeatherData>,
     @Override
     protected void onPostExecute(List<WeatherData> weatherDatas) {
         super.onPostExecute(weatherDatas);
-        Log.i(TAG, "Done work in Sync " + weatherDatas.size());
+        Log.i(TAG, "Done work in Sync ");
         mTaskExecutionState.Finished();
     }
 
+    /**
+     * The callback interface that will be called once the work is complete.
+     */
     interface TaskExecutionState
     {
         void Finished();

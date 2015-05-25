@@ -10,7 +10,8 @@ import app.com.example.malindasuhash.weatherapptake1.aidl.WeatherData;
 import app.com.example.malindasuhash.weatherapptake1.utils.OpenWeatherCaller;
 
 /**
- * Class to call the open weather service.
+ * Responsible for calling the Open weather endpoint.
+ * This inherits the IPC stub that is defined in AIDL.
  */
 class OpenWeatherClientSync extends WeatherCall.Stub {
 
@@ -19,8 +20,9 @@ class OpenWeatherClientSync extends WeatherCall.Stub {
     private String mOpenWebEndpointPrefix = "http://api.openweathermap.org/data/2.5/weather?q=";
 
     @Override
-    public synchronized List<WeatherData> getCurrentWeather(String Weather) throws RemoteException {
+    public List<WeatherData> getCurrentWeather(String Weather) throws RemoteException {
 
+        // Does the endpoint needs to URL encoded?
         String endpoint = mOpenWebEndpointPrefix + Weather;
 
         Log.i(TAG, "Looking for endpoint " + endpoint);
