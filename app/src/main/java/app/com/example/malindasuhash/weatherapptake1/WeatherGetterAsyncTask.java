@@ -37,6 +37,7 @@ public class WeatherGetterAsyncTask extends AsyncTask<String, List<WeatherData>,
     protected List<WeatherData> doInBackground(String... strings) {
         try {
             List<WeatherData> data = mWeatherCall.getCurrentWeather(strings[0]);
+            Log.i(TAG, "Data " + data);
             return data;
         } catch (RemoteException e) {
             e.printStackTrace();
@@ -47,7 +48,7 @@ public class WeatherGetterAsyncTask extends AsyncTask<String, List<WeatherData>,
     @Override
     protected void onPostExecute(List<WeatherData> weatherDatas) {
         super.onPostExecute(weatherDatas);
-        Log.i(TAG, "Done work in Sync");
+        Log.i(TAG, "Done work in Sync " + weatherDatas.size());
         mTaskExecutionState.Finished();
     }
 

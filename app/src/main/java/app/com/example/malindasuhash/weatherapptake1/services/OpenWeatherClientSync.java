@@ -27,8 +27,6 @@ class OpenWeatherClientSync extends WeatherCall.Stub {
 
         List<WeatherData> data = OpenWeatherCaller.getResults(endpoint);
 
-        //Log.i(TAG, "Results received count is " + data != null ? Integer.toString(data.size()) : "0");
-
         return data;
     }
 }

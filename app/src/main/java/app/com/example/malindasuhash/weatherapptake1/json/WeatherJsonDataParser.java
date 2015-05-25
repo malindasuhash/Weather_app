@@ -7,6 +7,7 @@ import android.util.Log;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 
 import app.com.example.malindasuhash.weatherapptake1.aidl.WeatherData;
@@ -30,7 +31,9 @@ public class WeatherJsonDataParser {
         try (JsonReader reader = new JsonReader(new InputStreamReader(inputStream, "UTF-8"))) {
             Log.i(TAG, "Parsing the results returned as an array");
 
-            return parseWeatherServiceResults(reader);
+            List<WeatherData> data = parseWeatherServiceResults(reader);
+
+            return data;
         }
     }
 
@@ -42,7 +45,8 @@ public class WeatherJsonDataParser {
             if (reader.peek() == JsonToken.END_OBJECT)
                 return null;
 
-            return parseWeatherMessage(reader);
+            List<WeatherData> data = parseWeatherMessage(reader);
+            return data;
         } finally {
             if (reader.peek() == JsonToken.END_OBJECT)
             {
@@ -51,25 +55,15 @@ public class WeatherJsonDataParser {
         }
     }
 
-
-    /**
-     * Constructor
-     *
-     * @param name
-     * @param speed
-     * @param deg
-     * @param temp
-     * @param humidity
-     * @param sunrise - OK
-     * @param sunset - OK
-     */
     public List<WeatherData> parseWeatherMessage(JsonReader reader)
             throws IOException {
 
-        List<WeatherData> data = null;
+        List<WeatherData> data = new ArrayList<>();
 
-        String weatherName;
-        SysInfo sysInfo = null;
+        String weatherName = null;
+        Tuple<Long, Long> sysInfo = null;
+        Tuple<Double, Long> tempAndHumidity = null;
+        Tuple<Double, Double> speedAndDeg = null;
 
         try {
             outerloop:
@@ -91,17 +85,18 @@ public class WeatherJsonDataParser {
                         break;
 
                     case "main":
-                    /*case JsonAcronym.lfs_JSON:
-                        Log.d(TAG, "reading lfs field");
-                        if (reader.peek() == JsonToken.BEGIN_ARRAY)
-                            acronyms = parseAcronymLongFormArray(reader);
-                        break outerloop;*/
+                        tempAndHumidity = getTempAndHumidity(reader);
+                        break;
+
+                    case "wind":
+                        speedAndDeg = getSpeedAndDeg(reader);
+                        break;
+
                     default:
                         Log.i(TAG, "weird problem with " + name + " field");
                         reader.skipValue();
                         break;
                 }
-
 
                 Log.i(TAG, "Read " + name);
             }
@@ -109,10 +104,16 @@ public class WeatherJsonDataParser {
             Log.i(TAG, "Reading complete.");
         }
 
+        WeatherData weatherData = new WeatherData(weatherName, speedAndDeg.Item1, speedAndDeg.Item2,
+                tempAndHumidity.Item1, tempAndHumidity.Item2,
+                sysInfo.Item2, sysInfo.Item1);
+
+        data.add(weatherData);
+
         return data;
     }
 
-    private SysInfo parseSysObject(JsonReader reader) throws IOException {
+    private Tuple<Long, Long> parseSysObject(JsonReader reader) throws IOException {
 
         reader.beginObject();
 
@@ -139,21 +140,84 @@ public class WeatherJsonDataParser {
 
         reader.endObject();
 
-        SysInfo info = new SysInfo();
-        info.subset = sunset;
-        info.sunrise = sunrise;
+        Tuple<Long, Long> info = new Tuple<>();
+        info.Item1 = sunset;
+        info.Item2 = sunrise;
 
         return info;
     }
 
-    public void getTemp(JsonReader reader) throws IOException
+    public Tuple<Double, Long> getTempAndHumidity(JsonReader reader) throws IOException
     {
+        reader.beginObject();
 
+        double temp = 0l;
+        long humidity = 0l;
+
+        while (reader.hasNext())
+        {
+            switch (reader.nextName())
+            {
+                case "temp":
+                    temp = reader.nextDouble();
+                    Log.i(TAG, "temp " + temp);
+                    break;
+                case "humidity":
+                    humidity = reader.nextLong();
+                    Log.i(TAG, "humidity " + humidity);
+                    break;
+                default:
+                    reader.skipValue();
+                    break;
+            }
+        }
+
+        reader.endObject();
+
+        Tuple<Double, Long> info = new Tuple<>();
+        info.Item1 = temp;
+        info.Item2 = humidity;
+
+        return info;
     }
 
-    private class SysInfo
+    public Tuple<Double, Double> getSpeedAndDeg(JsonReader reader) throws IOException
     {
-        public long sunrise;
-        public long subset;
+        reader.beginObject();
+
+        double speed = 0l;
+        double deg = 0l;
+
+        while (reader.hasNext())
+        {
+            switch (reader.nextName())
+            {
+                case "speed":
+                    speed = reader.nextDouble();
+                    Log.i(TAG, "speed " + speed);
+                    break;
+                case "deg":
+                    deg = reader.nextDouble();
+                    Log.i(TAG, "deg " + deg);
+                    break;
+                default:
+                    reader.skipValue();
+                    break;
+            }
+        }
+
+        reader.endObject();
+
+        Tuple<Double, Double> info = new Tuple<>();
+        info.Item1 = speed;
+        info.Item2 = deg;
+
+        return info;
+    }
+
+    private class Tuple<T, U>
+    {
+        public T Item1;
+        public U Item2;
     }
 }

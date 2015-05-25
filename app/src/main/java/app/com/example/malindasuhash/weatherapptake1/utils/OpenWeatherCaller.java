@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 
 import app.com.example.malindasuhash.weatherapptake1.aidl.WeatherData;
@@ -18,8 +17,6 @@ public class OpenWeatherCaller {
 
     public static List<WeatherData> getResults(String endpoint)
     {
-        final List<WeatherData> returnList = new ArrayList<WeatherData>();
-
         List<WeatherData> weatherDataList = null;
 
         try {
@@ -31,8 +28,6 @@ public class OpenWeatherCaller {
 
                 final WeatherJsonDataParser parser = new WeatherJsonDataParser();
 
-                // Parse the Json results and create JsonAcronym data
-                // objects.
                 weatherDataList = parser.parseJsonStream(in);
                 in.close();
             } finally {
@@ -43,16 +38,6 @@ public class OpenWeatherCaller {
             e.printStackTrace();
         }
 
-        if (weatherDataList != null && weatherDataList.size() > 0) {
-            // Convert the JsonAcronym data objects to our AcronymData
-            // object, which can be passed between processes.
-            /*for (WeatherData weatherData : weatherDataList)
-                returnList.add(new AcronymData(jsonAcronym.getLongForm(),
-                        jsonAcronym.getFreq(),
-                        jsonAcronym.getSince()));
-            */// Return the List of AcronymData.
-            return returnList;
-        }  else
-            return null;
+        return weatherDataList;
     }
 }
