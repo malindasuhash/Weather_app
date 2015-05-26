@@ -14,4 +14,5 @@
     <string name="weather_humidity">Humidity</string>
     <string name="weather_sunrise">Sunrise</string>
     <string name="weather_sunset_title">Sunset</string>
+    <string name="weather_from_cache">Is cached data?</string>
 </resources>

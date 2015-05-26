@@ -14,6 +14,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import app.com.example.malindasuhash.weatherapptake1.activities.WeatherActivity;
@@ -45,6 +48,8 @@ public class WeatherOps extends WeatherOpsBase {
     private WeakReference<TextView> mWeatherSunrise;
     private WeakReference<TextView> mWeatherSunset;
 
+    private HashMap<String,CacheEntry> mCache = new HashMap<>();
+
     private WeatherData mSyncWeatherData;
     private WeatherCall mWeatherCall;
 
@@ -63,13 +68,19 @@ public class WeatherOps extends WeatherOpsBase {
             mWeatherActivity.get().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    mProgressBar.get().setVisibility(View.INVISIBLE);
-                    mGetWeatherSync.get().setEnabled(true);
-                    mGetWeatherAsync.get().setEnabled(true);
+                    enableForNextLocation();
 
                     if (data != null) {
                         mReceiveComplete = true;
                         mSyncWeatherData = data.get(0);
+
+                        CacheEntry entry = new CacheEntry();
+                        entry.CachedOn = Calendar.getInstance().getTime();
+                        entry.Data = mSyncWeatherData;
+
+                        // Add to cache
+                        mCache.put(getLocation(), entry);
+
                         bindResults();
                     } else {
                         Toast.makeText(mWeatherActivity.get(), "No data", Toast.LENGTH_LONG).show();
@@ -79,11 +90,16 @@ public class WeatherOps extends WeatherOpsBase {
         }
     };
 
+    private void enableForNextLocation() {
+        mProgressBar.get().setVisibility(View.INVISIBLE);
+        mGetWeatherSync.get().setEnabled(true);
+        mGetWeatherAsync.get().setEnabled(true);
+    }
+
     private ServiceConnection mSyncServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
             Log.i(TAG, "Weather sync callback received.");
-
             mWeatherCall = WeatherCall.Stub.asInterface(iBinder);
         }
 
@@ -99,6 +115,11 @@ public class WeatherOps extends WeatherOpsBase {
         super(weatherActivity);
 
         initialiseFields();
+    }
+
+    public String getLocation()
+    {
+        return mLocation.get().getText().toString();
     }
 
     @Override
@@ -160,15 +181,20 @@ public class WeatherOps extends WeatherOpsBase {
     {
         if (mReceiveComplete && mSyncWeatherData != null)
         {
-            Log.i(TAG, "Binding weather data to UI " + mSyncWeatherData);
-            mWeatherName.get().setText(mSyncWeatherData.getName());
-            mWeatherSpeed.get().setText(Double.toString(mSyncWeatherData.getSpeed()));
-            mWeatherDeg.get().setText(Double.toString(mSyncWeatherData.getDeg()));
-            mWeatherTemp.get().setText(Double.toString(mSyncWeatherData.getTemp()));
-            mWeatherHumidity.get().setText(Double.toString(mSyncWeatherData.getHumidity()));
-            mWeatherSunrise.get().setText(Long.toString(mSyncWeatherData.getSunrise()));
-            mWeatherSunset.get().setText(Long.toString(mSyncWeatherData.getSunset()));
+           bindToUi(mSyncWeatherData);
         }
+    }
+
+    private void bindToUi(WeatherData data)
+    {
+        Log.i(TAG, "Binding weather data to UI " + data);
+        mWeatherName.get().setText(data.getName());
+        mWeatherSpeed.get().setText(Double.toString(data.getSpeed()));
+        mWeatherDeg.get().setText(Double.toString(data.getDeg()));
+        mWeatherTemp.get().setText(Double.toString(data.getTemp()));
+        mWeatherHumidity.get().setText(Double.toString(data.getHumidity()));
+        mWeatherSunrise.get().setText(Long.toString(data.getSunrise()));
+        mWeatherSunset.get().setText(Long.toString(data.getSunset()));
     }
 
     private void runInitTask()
@@ -180,11 +206,24 @@ public class WeatherOps extends WeatherOpsBase {
         mGetWeatherSync.get().setEnabled(false);
         Log.i(TAG, "Disabled both buttons");
 
-        Log.i(TAG, "Stating the async task.");
-        WeatherGetterAsyncTask weatherGetterAsyncTask = new WeatherGetterAsyncTask(state, mWeatherCall);
-        weatherGetterAsyncTask.execute(mLocation.get().getText().toString());
+        // Check cache first
+        CacheEntry data = mCache.get(getLocation());
+        Calendar localDateTime = Calendar.getInstance();
+        localDateTime.add(Calendar.SECOND, 10);
 
-        mAsyncTaskStillExecuting = true;
+        if (data != null && localDateTime.getTime().getTime() > data.CachedOn.getTime())
+        {
+            // Get from cache
+            bindToUi(data.Data);
+            Log.i(TAG, "Bound from cache");
+            enableForNextLocation();
+        } else
+        {
+            Log.i(TAG, "Stating the async task.");
+            WeatherGetterAsyncTask weatherGetterAsyncTask = new WeatherGetterAsyncTask(state, mWeatherCall);
+            weatherGetterAsyncTask.execute(mLocation.get().getText().toString());
+            mAsyncTaskStillExecuting = true;
+        }
     }
 
     private void bindToSyncService()
@@ -201,5 +240,12 @@ public class WeatherOps extends WeatherOpsBase {
         Log.i(TAG, "unbinding from the Sync weather service.");
 
         mWeatherActivity.get().unbindService(mSyncServiceConnection);
+    }
+
+    class CacheEntry
+    {
+        public Date CachedOn;
+
+        public WeatherData Data;
     }
 }

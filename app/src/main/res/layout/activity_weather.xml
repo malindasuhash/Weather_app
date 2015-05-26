@@ -154,6 +154,20 @@
             android:id="@+id/weather_sunset"
             android:paddingStart="30dp" />
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="@string/weather_from_cache"
+            android:id="@+id/textView7" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:id="@+id/weather_cached"
+            android:paddingStart="30dp" />
+
     </LinearLayout>
 
 
