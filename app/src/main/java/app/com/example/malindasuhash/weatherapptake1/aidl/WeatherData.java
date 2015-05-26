@@ -77,6 +77,36 @@ public class WeatherData implements Parcelable {
         return mName;
     }
 
+    public double getSpeed()
+    {
+        return mSpeed;
+    }
+
+    public double getDeg()
+    {
+        return mDeg;
+    }
+
+    public double getTemp()
+    {
+        return mTemp;
+    }
+
+    public long getHumidity()
+    {
+        return mHumidity;
+    }
+
+    public long getSunrise()
+    {
+        return mSunrise;
+    }
+
+    public long getSunset()
+    {
+        return mSunset;
+    }
+
     /**
      * Provides a printable representation of this object.
      */

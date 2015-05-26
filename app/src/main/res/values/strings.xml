@@ -6,4 +6,12 @@
     <string name="async_button">Get (Async)</string>
     <string name="location_cannot_be_empty">The location cannot be empty!</string>
     <string name="weather_name">Name</string>
+    <string name="weather_name_title">Name</string>
+    <string name="weather_speed">Speed</string>
+    <string name="weather_speed_title">Speed</string>
+    <string name="weather_deg_title">Wind direction</string>
+    <string name="weather_temperature">Temperature</string>
+    <string name="weather_humidity">Humidity</string>
+    <string name="weather_sunrise">Sunrise</string>
+    <string name="weather_sunset_title">Sunset</string>
 </resources>

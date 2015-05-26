@@ -9,7 +9,7 @@ import android.view.View;
 
 import app.com.example.malindasuhash.weatherapptake1.R;
 import app.com.example.malindasuhash.weatherapptake1.WeatherOps;
-import app.com.example.malindasuhash.weatherapptake1.WeatherOpsImpl;
+import app.com.example.malindasuhash.weatherapptake1.WeatherOpsBase;
 import app.com.example.malindasuhash.weatherapptake1.utils.RetainedFragmentManager;
 
 
@@ -17,7 +17,7 @@ public class WeatherActivity extends Activity {
 
     private final String TAG = this.getClass().getSimpleName();
 
-    private WeatherOpsImpl mWeatherOps;
+    private WeatherOpsBase mWeatherOps;
 
     protected final RetainedFragmentManager mRetainedFragmentManager =
             new RetainedFragmentManager(this.getFragmentManager(),
@@ -46,8 +46,16 @@ public class WeatherActivity extends Activity {
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    protected void onStart() {
+        super.onStart();
+
+        mWeatherOps.start();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
         mWeatherOps.stop();
     }
 

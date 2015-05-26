@@ -11,7 +11,7 @@ import app.com.example.malindasuhash.weatherapptake1.activities.WeatherActivity;
 /**
  * Simple base class to encapsulate weather handling logic.
  */
-public abstract class WeatherOpsImpl {
+public abstract class WeatherOpsBase {
 
     private final String TAG = this.getClass().getSimpleName();
 
@@ -19,7 +19,7 @@ public abstract class WeatherOpsImpl {
 
     protected WeakReference<EditText> mLocation;
 
-    public WeatherOpsImpl(WeatherActivity weatherActivity)
+    public WeatherOpsBase(WeatherActivity weatherActivity)
     {
         this.mWeatherActivity = new WeakReference<>(weatherActivity);
         this.mLocation = new WeakReference<>((EditText) mWeatherActivity.get().findViewById(R.id.location));
@@ -34,6 +34,11 @@ public abstract class WeatherOpsImpl {
     }
 
     protected abstract void DoWork();
+
+    public void start()
+    {
+        // For any start logic.
+    }
 
     public void stop()
     {
