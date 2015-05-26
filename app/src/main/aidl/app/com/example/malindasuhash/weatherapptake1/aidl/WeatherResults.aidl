@@ -1,6 +1,6 @@
 package app.com.example.malindasuhash.weatherapptake1.aidl;
 
-//import app.com.example.malindasuhash.weatherapptake1.aidl.WeatherData;
+import app.com.example.malindasuhash.weatherapptake1.aidl.WeatherData;
 import java.util.List;
 
 /**
@@ -14,5 +14,5 @@ interface WeatherResults {
      * to return the List of WeatherData results associated with a
      * one-way WeatherRequest.getCurrentWeather() call.
      */
-    oneway void sendResults(in List<String> results);
+    oneway void sendResults(in List<WeatherData> results);
 }
