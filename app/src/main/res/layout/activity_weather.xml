@@ -1,3 +1,7 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
@@ -28,23 +32,17 @@
             android:layout_weight="1"
             android:onClick="getWeatherSync" />
 
-        <Button
+        <ProgressBar
+            style="?android:attr/progressBarStyleSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/async_button"
-            android:id="@+id/weatherAsyc"
+            android:id="@+id/progress"
             android:layout_weight="1"
-            android:onClick="getWeatherAsync" />
+            android:visibility="invisible" />
+
     </LinearLayout>
 
-    <ProgressBar
-        style="?android:attr/progressBarStyleLarge"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/progress"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
-        android:visibility="invisible" />
+
 
     <LinearLayout
         android:orientation="vertical"
@@ -53,7 +51,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/linearLayout"
-        android:layout_alignParentStart="true">
+        android:layout_alignParentStart="true"
+        android:baselineAligned="false">
 
         <TextView
             android:layout_width="wrap_content"
@@ -154,21 +153,7 @@
             android:id="@+id/weather_sunset"
             android:paddingStart="30dp" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text="@string/weather_from_cache"
-            android:id="@+id/textView7" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:id="@+id/weather_cached"
-            android:paddingStart="30dp" />
-
     </LinearLayout>
 
-
 </RelativeLayout>
+    </ScrollView>

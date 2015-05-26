@@ -36,18 +36,13 @@ public class WeatherOps extends WeatherOpsBase {
     private WeakReference<EditText> mLocation;
     private WeakReference<ProgressBar> mProgressBar;
 
-    private WeakReference<Button> mGetWeatherSync;
-    private WeakReference<Button> mGetWeatherAsync;
-
     private WeakReference<TextView> mWeatherName;
-    private WeakReference<View> mSummary;
     private WeakReference<TextView> mWeatherSpeed;
     private WeakReference<TextView> mWeatherDeg;
     private WeakReference<TextView> mWeatherTemp;
     private WeakReference<TextView> mWeatherHumidity;
     private WeakReference<TextView> mWeatherSunrise;
     private WeakReference<TextView> mWeatherSunset;
-    private WeakReference<TextView> mCacheMsg;
 
     // Very simple map to store the weather information
     private HashMap<String,CacheEntry> mCache = new HashMap<>();
@@ -70,20 +65,12 @@ public class WeatherOps extends WeatherOpsBase {
                 @Override
                 public void run() {
                     if (data != null) {
+                        addToCache(data.get(0));
+                        bindToUi(data.get(0));
                         mSyncWeatherData = data.get(0);
-
-                        CacheEntry entry = new CacheEntry();
-                        entry.CachedOn = new Date().getTime() + 10 * 1000;
-                        entry.Data = mSyncWeatherData;
-
-                        // Add to cache
-                        mCache.put(getLocation(), entry);
-                        bindResults();
                     } else {
                         Toast.makeText(mWeatherActivity.get(), "No data", Toast.LENGTH_LONG).show();
                     }
-
-                    enableForNextLocation();
                 }
             });
         }
@@ -123,11 +110,9 @@ public class WeatherOps extends WeatherOpsBase {
     public void onConfigurationChange(WeatherActivity activity)
     {
         Log.i(TAG, "Handling configuration change.");
-
         mWeatherActivity = new WeakReference<>(activity);
 
         Log.i(TAG, "Initialising fields.");
-
         initialiseFields();
     }
 
@@ -152,8 +137,6 @@ public class WeatherOps extends WeatherOpsBase {
         Log.i(TAG, "Initialising fields as weak references.");
         mLocation = new WeakReference<>((EditText)mWeatherActivity.get().findViewById(R.id.location));
         mProgressBar = new WeakReference<>((ProgressBar)mWeatherActivity.get().findViewById(R.id.progress));
-        mGetWeatherAsync = new WeakReference<>((Button)mWeatherActivity.get().findViewById(R.id.weatherAsyc));
-        mGetWeatherSync = new WeakReference<>((Button)mWeatherActivity.get().findViewById(R.id.weatherSync));
 
         mWeatherName = new WeakReference<>((TextView)mWeatherActivity.get().findViewById(R.id.weather_name));
         mWeatherSpeed = new WeakReference<>((TextView)mWeatherActivity.get().findViewById(R.id.weather_speed));
@@ -162,11 +145,9 @@ public class WeatherOps extends WeatherOpsBase {
         mWeatherHumidity = new WeakReference<>((TextView)mWeatherActivity.get().findViewById(R.id.weather_humidity));
         mWeatherSunrise = new WeakReference<>((TextView)mWeatherActivity.get().findViewById(R.id.weather_sunrise));
         mWeatherSunset = new WeakReference<>((TextView)mWeatherActivity.get().findViewById(R.id.weather_sunset));
-        mSummary = new WeakReference<>((View)mWeatherActivity.get().findViewById(R.id.desc));
-        mCacheMsg = new WeakReference<>((TextView)mWeatherActivity.get().findViewById(R.id.weather_cached));
 
         mProgressBar.get().setVisibility(mAsyncTaskStillExecuting ? View.VISIBLE : View.INVISIBLE);
-        mSummary.get().setVisibility(View.VISIBLE);
+
         bindResults();
     }
 
@@ -188,40 +169,26 @@ public class WeatherOps extends WeatherOpsBase {
         mWeatherHumidity.get().setText(Formatter.formatHumidity(data.getHumidity()));
         mWeatherSunrise.get().setText(Long.toString(data.getSunrise()));
         mWeatherSunset.get().setText(Long.toString(data.getSunset()));
+
+        mProgressBar.get().setVisibility(View.INVISIBLE);
+        mAsyncTaskStillExecuting = true;
     }
 
     private void getDataAsyncTask()
     {
-        disableForNextLocation();
+        WeatherData cacheData = getFromCache(getLocation());
 
-        // Check cache first
-        Date date = new Date();
-
-        CacheEntry data = mCache.get(getLocation());
-
-        if (data != null && date.getTime() < data.CachedOn)
+        if (cacheData == null)
         {
-            bindToUi(data.Data);
-            Log.i(TAG, "Bound from cache");
-            enableForNextLocation();
-        } else
-        {
+            mProgressBar.get().setVisibility(View.VISIBLE);
             Log.i(TAG, "Stating the async task.");
             WeatherGetterAsyncTask weatherGetterAsyncTask = new WeatherGetterAsyncTask(state, mWeatherCall);
             weatherGetterAsyncTask.execute(getLocation());
             mAsyncTaskStillExecuting = true;
+        } else
+        {
+            bindToUi(cacheData);
         }
-    }
-
-    private void disableForNextLocation() {
-        Log.i(TAG, "Executing sync task get whether data.");
-        mProgressBar.get().setVisibility(View.VISIBLE);
-        Log.i(TAG, "Disabled both buttons");
-    }
-
-    private void enableForNextLocation() {
-        Log.i(TAG, "Enabled both buttons");
-        mProgressBar.get().setVisibility(View.INVISIBLE);
     }
 
     private void bindToSyncService()
@@ -238,6 +205,30 @@ public class WeatherOps extends WeatherOpsBase {
         Log.i(TAG, "unbinding from the Sync weather service.");
 
         mWeatherActivity.get().unbindService(mSyncServiceConnection);
+    }
+
+    private synchronized void addToCache(WeatherData data)
+    {
+        CacheEntry entry = new CacheEntry();
+        entry.CachedOn = new Date().getTime() + 10 * 1000;
+        entry.Data = mSyncWeatherData;
+
+        // Add to cache
+        mCache.put(data.getName().toLowerCase(), entry);
+    }
+
+    public synchronized WeatherData getFromCache(String location)
+    {
+        Date date = new Date();
+        CacheEntry data = mCache.get(location.toLowerCase());
+
+        if (data != null && date.getTime() < data.CachedOn)
+        {
+            Log.i(TAG, "Bound from cache");
+            return data.Data;
+        }
+
+        return null;
     }
 
     class CacheEntry
