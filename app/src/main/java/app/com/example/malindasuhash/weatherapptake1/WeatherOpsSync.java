@@ -24,11 +24,9 @@ import app.com.example.malindasuhash.weatherapptake1.services.WeatherServiceSync
 import app.com.example.malindasuhash.weatherapptake1.utils.Formatter;
 
 /**
- * This class contains the operations of the weather application.
- * The goal is to remove keep these operations out of the
- * activity and retained using the RetainedFragmentManager.
+ * The operational handler for the WeatherServiceSync bound service.
  */
-public class WeatherOps extends WeatherOpsBase {
+public class WeatherOpsSync extends WeatherOpsBase {
 
     private final String TAG = this.getClass().getSimpleName();
 
@@ -89,7 +87,7 @@ public class WeatherOps extends WeatherOpsBase {
         }
     };
 
-    public WeatherOps(WeatherActivity weatherActivity)
+    public WeatherOpsSync(WeatherActivity weatherActivity)
     {
         super(weatherActivity);
         initialiseFields();

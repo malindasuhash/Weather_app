@@ -8,7 +8,7 @@ import android.view.MenuItem;
 import android.view.View;
 
 import app.com.example.malindasuhash.weatherapptake1.R;
-import app.com.example.malindasuhash.weatherapptake1.WeatherOps;
+import app.com.example.malindasuhash.weatherapptake1.WeatherOpsSync;
 import app.com.example.malindasuhash.weatherapptake1.WeatherOpsBase;
 import app.com.example.malindasuhash.weatherapptake1.utils.RetainedFragmentManager;
 
@@ -90,7 +90,7 @@ public class WeatherActivity extends Activity {
         if (mRetainedFragmentManager.firstTimeIn()) {
             Log.d(TAG, "First time onCreate() call");
 
-            mWeatherOps = new WeatherOps(this);
+            mWeatherOps = new WeatherOpsSync(this);
 
             mRetainedFragmentManager.put(weatherFragmentTagName, mWeatherOps);
 
@@ -107,7 +107,7 @@ public class WeatherActivity extends Activity {
             // circumstances, but it's better to lose state than to
             // crash!
             if (mWeatherOps == null) {
-                mWeatherOps = new WeatherOps(this);
+                mWeatherOps = new WeatherOpsSync(this);
 
                 mRetainedFragmentManager.put(weatherFragmentTagName, mWeatherOps);
             }
