@@ -7,6 +7,7 @@ import java.util.List;
 
 import app.com.example.malindasuhash.weatherapptake1.aidl.WeatherCall;
 import app.com.example.malindasuhash.weatherapptake1.aidl.WeatherData;
+import app.com.example.malindasuhash.weatherapptake1.utils.EndpointBuilder;
 import app.com.example.malindasuhash.weatherapptake1.utils.OpenWeatherCaller;
 
 /**
@@ -17,13 +18,10 @@ class OpenWeatherClientSync extends WeatherCall.Stub {
 
     private final String TAG = this.getClass().getSimpleName();
 
-    private String mOpenWebEndpointPrefix = "http://api.openweathermap.org/data/2.5/weather?q=";
-
     @Override
     public List<WeatherData> getCurrentWeather(String Weather) throws RemoteException {
 
-        // Does the endpoint needs to URL encoded?
-        String endpoint = mOpenWebEndpointPrefix + Weather;
+        String endpoint = EndpointBuilder.build(Weather);
 
         Log.i(TAG, "Looking for endpoint " + endpoint);
 

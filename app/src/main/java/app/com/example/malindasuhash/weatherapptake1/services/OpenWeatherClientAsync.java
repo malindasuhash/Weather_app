@@ -8,6 +8,7 @@ import java.util.List;
 import app.com.example.malindasuhash.weatherapptake1.aidl.WeatherData;
 import app.com.example.malindasuhash.weatherapptake1.aidl.WeatherRequest;
 import app.com.example.malindasuhash.weatherapptake1.aidl.WeatherResults;
+import app.com.example.malindasuhash.weatherapptake1.utils.EndpointBuilder;
 import app.com.example.malindasuhash.weatherapptake1.utils.OpenWeatherCaller;
 
 /**
@@ -17,12 +18,10 @@ public class OpenWeatherClientAsync extends WeatherRequest.Stub {
 
     private final String TAG = this.getClass().getSimpleName();
 
-    private String mOpenWebEndpointPrefix = "http://api.openweathermap.org/data/2.5/weather?q=";
-
     @Override
     public void getCurrentWeather(String Weather, WeatherResults results) throws RemoteException {
 
-        String endpoint = mOpenWebEndpointPrefix + Weather;
+        String endpoint = EndpointBuilder.build(Weather);
 
         Log.i(TAG, "Looking for endpoint " + endpoint);
 
