@@ -54,8 +54,11 @@ public class WeatherOps extends WeatherOpsBase {
 
     private volatile boolean mAsyncTaskStillExecuting;
 
+    // Callback for the AsyncTask to update the UI.
+    // This allows to update the UI through the WeatherOps
+    // rather than updating the UI directly in the AsyncTask
+    // itself.
     private WeatherGetterAsyncTask.TaskExecutionState state = new WeatherGetterAsyncTask.TaskExecutionState() {
-
         @Override
         public void Finished(final List<WeatherData> data) {
             mAsyncTaskStillExecuting = false;
@@ -63,6 +66,7 @@ public class WeatherOps extends WeatherOpsBase {
         }
     };
 
+    // Service connection for Sync weather service.
     private ServiceConnection mSyncServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
@@ -77,7 +81,7 @@ public class WeatherOps extends WeatherOpsBase {
         }
     };
 
-    // Service connection for the bound service.
+    // Service connection for the async weather service.
     private ServiceConnection mASyncserviceConnection = new ServiceConnection() {
 
         @Override
@@ -99,14 +103,34 @@ public class WeatherOps extends WeatherOpsBase {
         initialiseFields();
     }
 
+    /**
+        Calls the Sync Weather service to get data.
+     */
     @Override
     protected void DoWork() {
-        getDataAsyncTask();
+        WeatherData cacheData = mCacheManager.get(getLocation());
+        if (cacheData == null)
+        {
+            getDataFromService(true);
+        }
+        else {
+            bindToUi(cacheData);
+        }
     }
 
+    /**
+     Calls the Async Weather service to get data.
+     */
     @Override
     protected void DoWorkAsync() {
-        getDataFromAsyncService();
+        WeatherData cacheData = mCacheManager.get(getLocation());
+        if (cacheData == null)
+        {
+            getDataFromService(false);
+        }
+        else {
+            bindToUi(cacheData);
+        }
     }
 
     @Override
@@ -200,33 +224,30 @@ public class WeatherOps extends WeatherOpsBase {
         mAsyncTaskStillExecuting = true;
     }
 
-    private void getDataAsyncTask()
+    /**
+     * Executes the Sync or Async strategy based on the provided
+     * value.
+     */
+    private void getDataFromService(boolean useSyncService)
     {
-        WeatherData cacheData = mCacheManager.get(getLocation());
-
-        Log.i(TAG, "Found in cache " + getLocation() + " " + (cacheData != null));
-
-        if (cacheData == null)
+        if (useSyncService)
         {
             mProgressBar.get().setVisibility(View.VISIBLE);
             Log.i(TAG, "Stating the async task.");
             WeatherGetterAsyncTask weatherGetterAsyncTask = new WeatherGetterAsyncTask(state, mWeatherCall);
             weatherGetterAsyncTask.execute(getLocation());
             mAsyncTaskStillExecuting = true;
-        } else
-        {
-            bindToUi(cacheData);
         }
-    }
+        else
+        {
+            Log.i(TAG, "Calling the async bound service. inside " + Thread.currentThread().getId());
 
-    private void getDataFromAsyncService()
-    {
-        Log.i(TAG, "Calling the async bound service. inside " + Thread.currentThread().getId());
-
-        try {
-            mWeatherRequest.getCurrentWeather(getLocation(), mCallback);
-        } catch (RemoteException e) {
-            e.printStackTrace();
+            try {
+                mWeatherRequest.getCurrentWeather(getLocation(), mCallback);
+                Log.i(TAG, "Request sent to service");
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -281,7 +302,7 @@ public class WeatherOps extends WeatherOpsBase {
 
         @Override
         public void sendResults(List<WeatherData> results) throws RemoteException {
-            Log.i(TAG, "Callback received from bound async service.");
+            Log.i(TAG, "Callback received from bound async service. Attempt to bound to UI.");
             bindResults(results);
         }
     }
