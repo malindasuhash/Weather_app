@@ -33,7 +33,17 @@ public abstract class WeatherOpsBase {
         }
     }
 
+    public void getCurrentWeatherAsync()
+    {
+        if (validate())
+        {
+            DoWorkAsync();
+        }
+    }
+
     protected abstract void DoWork();
+
+    protected abstract void DoWorkAsync();
 
     public void start()
     {

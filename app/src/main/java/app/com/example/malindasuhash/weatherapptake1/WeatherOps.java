@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -20,17 +21,19 @@ import java.util.List;
 import app.com.example.malindasuhash.weatherapptake1.activities.WeatherActivity;
 import app.com.example.malindasuhash.weatherapptake1.aidl.WeatherCall;
 import app.com.example.malindasuhash.weatherapptake1.aidl.WeatherData;
+import app.com.example.malindasuhash.weatherapptake1.aidl.WeatherRequest;
+import app.com.example.malindasuhash.weatherapptake1.aidl.WeatherResults;
+import app.com.example.malindasuhash.weatherapptake1.services.WeatherServiceAsync;
 import app.com.example.malindasuhash.weatherapptake1.services.WeatherServiceSync;
 import app.com.example.malindasuhash.weatherapptake1.utils.Formatter;
 
 /**
  * The operational handler for the WeatherServiceSync bound service.
  */
-public class WeatherOpsSync extends WeatherOpsBase {
+public class WeatherOps extends WeatherOpsBase {
 
     private final String TAG = this.getClass().getSimpleName();
 
-    private WeakReference<EditText> mLocation;
     private WeakReference<ProgressBar> mProgressBar;
 
     private WeakReference<TextView> mWeatherName;
@@ -46,6 +49,8 @@ public class WeatherOpsSync extends WeatherOpsBase {
 
     private WeatherData mSyncWeatherData;
     private WeatherCall mWeatherCall;
+    private WeatherRequest mWeatherRequest;
+    private WeatherResultCallback mCallback;
 
     private volatile boolean mAsyncTaskStillExecuting;
 
@@ -87,15 +92,35 @@ public class WeatherOpsSync extends WeatherOpsBase {
         }
     };
 
-    public WeatherOpsSync(WeatherActivity weatherActivity)
+    // Service connection for the bound service.
+    private ServiceConnection mASyncserviceConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            mWeatherRequest = WeatherRequest.Stub.asInterface(iBinder);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            mWeatherRequest = null;
+        }
+    };
+
+    public WeatherOps(WeatherActivity weatherActivity)
     {
         super(weatherActivity);
+        mCallback = new WeatherResultCallback();
         initialiseFields();
     }
 
     @Override
     protected void DoWork() {
         getDataAsyncTask();
+    }
+
+    @Override
+    protected void DoWorkAsync() {
+        getDataFromAsyncService();
     }
 
     @Override
@@ -112,16 +137,18 @@ public class WeatherOpsSync extends WeatherOpsBase {
     public void stop() {
         super.stop();
 
-        Log.i(TAG, "Stopping Sync service.");
+        Log.i(TAG, "Stopping services.");
         unbindFromSyncService();
+        unbindFromAsyncService();
     }
 
     @Override
     public void start() {
         super.start();
 
-        Log.i(TAG, "Starting Sync service.");
+        Log.i(TAG, "Starting services.");
         bindToSyncService();
+        bindToASyncService();
     }
 
     private void initialiseFields()
@@ -183,20 +210,47 @@ public class WeatherOpsSync extends WeatherOpsBase {
         }
     }
 
+    private void getDataFromAsyncService()
+    {
+        Log.i(TAG, "Calling the async bound service.");
+
+        try {
+            mWeatherRequest.getCurrentWeather(getLocation(), mCallback);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Sync service.
+     */
     private void bindToSyncService()
     {
         Log.i(TAG, "Binding to the Sync weather service.");
-
         Intent intent = WeatherServiceSync.makeIntent(mWeatherActivity.get());
-
         mWeatherActivity.get().bindService(intent, mSyncServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
+    private void bindToASyncService()
+    {
+        Log.i(TAG, "Binding to the Async weather service.");
+        Intent intent = WeatherServiceAsync.makeIntent(mWeatherActivity.get());
+        mWeatherActivity.get().bindService(intent, mASyncserviceConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    /**
+     * Async service.
+     */
     private void unbindFromSyncService()
     {
         Log.i(TAG, "unbinding from the Sync weather service.");
-
         mWeatherActivity.get().unbindService(mSyncServiceConnection);
+    }
+
+    private void unbindFromAsyncService()
+    {
+        Log.i(TAG, "unbinding from the Sync weather service.");
+        mWeatherActivity.get().unbindService(mASyncserviceConnection);
     }
 
     private synchronized void addToCache(WeatherData data)
@@ -221,6 +275,19 @@ public class WeatherOpsSync extends WeatherOpsBase {
         }
 
         return null;
+    }
+    /**
+     * Handles the callback from the bound async service.
+     */
+    class WeatherResultCallback extends WeatherResults.Stub
+    {
+        private final String TAG = this.getClass().getName();
+
+        @Override
+        public void sendResults(List<WeatherData> results) throws RemoteException {
+            Log.i(TAG, "Callback received from bound async service.");
+            bindToUi(results.get(0));
+        }
     }
 
     class CacheEntry
