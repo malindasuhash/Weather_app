@@ -278,7 +278,6 @@ public class WeatherOps extends WeatherOpsBase {
             Log.i(TAG, "unbinding from the Sync weather service.");
             mWeatherActivity.get().unbindService(mSyncServiceConnection);
         }
-
     }
 
     /**
