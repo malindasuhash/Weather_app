@@ -1,4 +1,4 @@
-package app.com.example.malindasuhash.weatherapptake1.services;
+package app.com.example.malindasuhash.weatherapptake1.services.clients;
 
 import android.os.RemoteException;
 import android.util.Log;
@@ -14,7 +14,7 @@ import app.com.example.malindasuhash.weatherapptake1.utils.OpenWeatherCaller;
  * Responsible for calling the Open weather endpoint.
  * This inherits the IPC stub that is defined in AIDL.
  */
-class OpenWeatherClientSync extends WeatherCall.Stub {
+public class OpenWeatherClientSync extends WeatherCall.Stub {
 
     private final String TAG = this.getClass().getSimpleName();
 

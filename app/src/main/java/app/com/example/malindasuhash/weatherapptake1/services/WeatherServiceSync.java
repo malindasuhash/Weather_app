@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
 
+import app.com.example.malindasuhash.weatherapptake1.services.clients.OpenWeatherClientSync;
+
 /**
  * Sync Weather service calling the external web service to get data.
  */

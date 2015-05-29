@@ -93,11 +93,6 @@ public class WeatherOpsSync extends WeatherOpsBase {
         initialiseFields();
     }
 
-    private String getLocation()
-    {
-        return mLocation.get().getText().toString().trim();
-    }
-
     @Override
     protected void DoWork() {
         getDataAsyncTask();

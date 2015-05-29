@@ -50,6 +50,11 @@ public abstract class WeatherOpsBase {
         // NOP for the moment.
     }
 
+    protected String getLocation()
+    {
+        return mLocation.get().getText().toString().trim();
+    }
+
     private boolean validate()
     {
         String location = mLocation.get().getText().toString();

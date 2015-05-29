@@ -1,4 +1,4 @@
-package app.com.example.malindasuhash.weatherapptake1.services;
+package app.com.example.malindasuhash.weatherapptake1.services.clients;
 
 import android.os.RemoteException;
 import android.util.Log;
