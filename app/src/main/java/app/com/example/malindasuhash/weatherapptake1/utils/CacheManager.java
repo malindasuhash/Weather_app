@@ -12,7 +12,6 @@ import app.com.example.malindasuhash.weatherapptake1.aidl.WeatherData;
  */
 public class CacheManager {
 
-    private Date mDate = new Date();
     private HashMap<String, CacheEntry> mBackingStore = new HashMap<>();
     private int cacheDurationInSeconds;
 
@@ -24,13 +23,14 @@ public class CacheManager {
     /**
      * Attempts to find an entry in the cache for the given key.
      */
-    public synchronized WeatherData get(String key)
+    public WeatherData get(String key)
     {
         updateCache();
 
-        CacheEntry cached = mBackingStore.get(key);
+        Date date = new Date();
+        CacheEntry cached = mBackingStore.get(key.toLowerCase());
 
-        if (cached != null && mDate.getTime() < cached.CachedUntil)
+        if (cached != null && date.getTime() < cached.CachedUntil)
         {
             return cached.Data;
         }
@@ -43,7 +43,8 @@ public class CacheManager {
      */
     public synchronized void set(String key, WeatherData weatherData)
     {
-        long expiry = mDate.getTime() + cacheDurationInSeconds * 1000; // in milliseconds
+        Date date = new Date();
+        long expiry = date.getTime() + (cacheDurationInSeconds * 1000); // in milliseconds
 
         CacheEntry entry = new CacheEntry();
         entry.Data = weatherData;
@@ -61,7 +62,7 @@ public class CacheManager {
         {
             if (cacheEntrySet.getValue().CachedUntil > date.getTime())
             {
-                map.put(cacheEntrySet.getKey(), cacheEntrySet.getValue());
+                map.put(cacheEntrySet.getKey().toLowerCase(), cacheEntrySet.getValue());
             }
         }
 

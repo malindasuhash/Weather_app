@@ -15,8 +15,6 @@ import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
 import app.com.example.malindasuhash.weatherapptake1.activities.WeatherActivity;
@@ -26,6 +24,7 @@ import app.com.example.malindasuhash.weatherapptake1.aidl.WeatherRequest;
 import app.com.example.malindasuhash.weatherapptake1.aidl.WeatherResults;
 import app.com.example.malindasuhash.weatherapptake1.services.WeatherServiceAsync;
 import app.com.example.malindasuhash.weatherapptake1.services.WeatherServiceSync;
+import app.com.example.malindasuhash.weatherapptake1.utils.CacheManager;
 import app.com.example.malindasuhash.weatherapptake1.utils.Formatter;
 
 /**
@@ -35,6 +34,9 @@ public class WeatherOps extends WeatherOpsBase {
 
     private final String TAG = this.getClass().getSimpleName();
 
+    private final int CACHE_DURATION_IN_SECONDS = 10;
+
+    private CacheManager mCacheManager;
     private WeakReference<ProgressBar> mProgressBar;
 
     private WeakReference<TextView> mWeatherName;
@@ -44,9 +46,6 @@ public class WeatherOps extends WeatherOpsBase {
     private WeakReference<TextView> mWeatherHumidity;
     private WeakReference<TextView> mWeatherSunrise;
     private WeakReference<TextView> mWeatherSunset;
-
-    // Very simple map to store the weather information
-    private HashMap<String,CacheEntry> mCache = new HashMap<>();
 
     private WeatherData mSyncWeatherData;
     private WeatherCall mWeatherCall;
@@ -96,6 +95,7 @@ public class WeatherOps extends WeatherOpsBase {
     {
         super(weatherActivity);
         mCallback = new WeatherResultCallback();
+        mCacheManager = new CacheManager(CACHE_DURATION_IN_SECONDS);
         initialiseFields();
     }
 
@@ -173,7 +173,7 @@ public class WeatherOps extends WeatherOpsBase {
 
     private void bind(List<WeatherData> data) {
         if (data != null && data.size() > 0) {
-            addToCache(data.get(0));
+            mCacheManager.set(data.get(0).getName(), data.get(0));
             bindToUi(data.get(0));
             mSyncWeatherData = data.get(0);
         } else {
@@ -202,7 +202,9 @@ public class WeatherOps extends WeatherOpsBase {
 
     private void getDataAsyncTask()
     {
-        WeatherData cacheData = getFromCache(getLocation());
+        WeatherData cacheData = mCacheManager.get(getLocation());
+
+        Log.i(TAG, "Found in cache " + getLocation() + " " + (cacheData != null));
 
         if (cacheData == null)
         {
@@ -270,29 +272,6 @@ public class WeatherOps extends WeatherOpsBase {
         }
     }
 
-    private synchronized void addToCache(WeatherData data)
-    {
-        CacheEntry entry = new CacheEntry();
-        entry.CachedOn = new Date().getTime() + 10 * 1000;
-        entry.Data = mSyncWeatherData;
-
-        // Add to cache
-        mCache.put(data.getName().toLowerCase(), entry);
-    }
-
-    public synchronized WeatherData getFromCache(String location)
-    {
-        Date date = new Date();
-        CacheEntry data = mCache.get(location.toLowerCase());
-
-        if (data != null && date.getTime() < data.CachedOn)
-        {
-            Log.i(TAG, "Bound from cache");
-            return data.Data;
-        }
-
-        return null;
-    }
     /**
      * Handles the callback from the bound async service.
      */
@@ -305,12 +284,5 @@ public class WeatherOps extends WeatherOpsBase {
             Log.i(TAG, "Callback received from bound async service.");
             bindResults(results);
         }
-    }
-
-    public class CacheEntry
-    {
-        public long CachedOn;
-
-        public WeatherData Data;
     }
 }
