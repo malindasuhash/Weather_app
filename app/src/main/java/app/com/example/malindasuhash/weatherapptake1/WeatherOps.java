@@ -158,7 +158,7 @@ public class WeatherOps extends WeatherOpsBase {
         if (mSyncWeatherData != null)
             data.add(mSyncWeatherData);
 
-        bindResults(data);
+        bind(data);
     }
 
     private void bindResults(final List<WeatherData> data)
@@ -166,19 +166,23 @@ public class WeatherOps extends WeatherOpsBase {
         mWeatherActivity.get().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (data != null && data.size() > 0) {
-                    addToCache(data.get(0));
-                    bindToUi(data.get(0));
-                    mSyncWeatherData = data.get(0);
-                } else {
-                    Toast.makeText(mWeatherActivity.get(), "No data", Toast.LENGTH_LONG).show();
-                }
-                if (mSyncWeatherData != null)
-                {
-                    bindToUi(mSyncWeatherData);
-                }
+                bind(data);
             }
         });
+    }
+
+    private void bind(List<WeatherData> data) {
+        if (data != null && data.size() > 0) {
+            addToCache(data.get(0));
+            bindToUi(data.get(0));
+            mSyncWeatherData = data.get(0);
+        } else {
+            Toast.makeText(mWeatherActivity.get(), "No data", Toast.LENGTH_LONG).show();
+        }
+        if (mSyncWeatherData != null)
+        {
+            bindToUi(mSyncWeatherData);
+        }
     }
 
     private void bindToUi(WeatherData data)
@@ -215,24 +219,13 @@ public class WeatherOps extends WeatherOpsBase {
 
     private void getDataFromAsyncService()
     {
-        Log.i(TAG, "Calling the async bound service. outside " + Thread.currentThread().getId());
+        Log.i(TAG, "Calling the async bound service. inside " + Thread.currentThread().getId());
 
-        new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-
-                android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
-
-                Log.i(TAG, "Calling the async bound service. inside " + Thread.currentThread().getId());
-
-               try {
-                    mWeatherRequest.getCurrentWeather(getLocation(), mCallback);
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).run();
+        try {
+            mWeatherRequest.getCurrentWeather(getLocation(), mCallback);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -253,18 +246,28 @@ public class WeatherOps extends WeatherOpsBase {
     }
 
     /**
-     * Async service.
+     * Unbinds from Sync weather service if still connected.
      */
     private void unbindFromSyncService()
     {
-        Log.i(TAG, "unbinding from the Sync weather service.");
-        mWeatherActivity.get().unbindService(mSyncServiceConnection);
+        if (mSyncServiceConnection != null) // To ensure we are still connected.
+        {
+            Log.i(TAG, "unbinding from the Sync weather service.");
+            mWeatherActivity.get().unbindService(mSyncServiceConnection);
+        }
+
     }
 
+    /**
+     * Unbinds from Async weather service if still connected.
+     */
     private void unbindFromAsyncService()
     {
-        Log.i(TAG, "unbinding from the Sync weather service.");
-        mWeatherActivity.get().unbindService(mASyncserviceConnection);
+        if (mASyncserviceConnection != null)
+        {
+            Log.i(TAG, "unbinding from the Sync weather service.");
+            mWeatherActivity.get().unbindService(mASyncserviceConnection);
+        }
     }
 
     private synchronized void addToCache(WeatherData data)
@@ -304,7 +307,7 @@ public class WeatherOps extends WeatherOpsBase {
         }
     }
 
-    class CacheEntry
+    public class CacheEntry
     {
         public long CachedOn;
 
