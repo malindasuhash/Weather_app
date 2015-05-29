@@ -14,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -59,22 +60,7 @@ public class WeatherOps extends WeatherOpsBase {
         @Override
         public void Finished(final List<WeatherData> data) {
             mAsyncTaskStillExecuting = false;
-
-            // The callback is currently is being received
-            // in the UI thread. However just to be sure queueing
-            // in UI thread.
-            mWeatherActivity.get().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (data != null) {
-                        addToCache(data.get(0));
-                        bindToUi(data.get(0));
-                        mSyncWeatherData = data.get(0);
-                    } else {
-                        Toast.makeText(mWeatherActivity.get(), "No data", Toast.LENGTH_LONG).show();
-                    }
-                }
-            });
+            bindResults(data);
         }
     };
 
@@ -167,15 +153,32 @@ public class WeatherOps extends WeatherOpsBase {
 
         mProgressBar.get().setVisibility(mAsyncTaskStillExecuting ? View.VISIBLE : View.INVISIBLE);
 
-        bindResults();
+        ArrayList<WeatherData> data = new ArrayList<>();
+
+        if (mSyncWeatherData != null)
+            data.add(mSyncWeatherData);
+
+        bindResults(data);
     }
 
-    private void bindResults()
+    private void bindResults(final List<WeatherData> data)
     {
-        if (mSyncWeatherData != null)
-        {
-           bindToUi(mSyncWeatherData);
-        }
+        mWeatherActivity.get().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (data != null && data.size() > 0) {
+                    addToCache(data.get(0));
+                    bindToUi(data.get(0));
+                    mSyncWeatherData = data.get(0);
+                } else {
+                    Toast.makeText(mWeatherActivity.get(), "No data", Toast.LENGTH_LONG).show();
+                }
+                if (mSyncWeatherData != null)
+                {
+                    bindToUi(mSyncWeatherData);
+                }
+            }
+        });
     }
 
     private void bindToUi(WeatherData data)
@@ -212,13 +215,24 @@ public class WeatherOps extends WeatherOpsBase {
 
     private void getDataFromAsyncService()
     {
-        Log.i(TAG, "Calling the async bound service.");
+        Log.i(TAG, "Calling the async bound service. outside " + Thread.currentThread().getId());
 
-        try {
-            mWeatherRequest.getCurrentWeather(getLocation(), mCallback);
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+
+                android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
+
+                Log.i(TAG, "Calling the async bound service. inside " + Thread.currentThread().getId());
+
+               try {
+                    mWeatherRequest.getCurrentWeather(getLocation(), mCallback);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).run();
     }
 
     /**
@@ -286,7 +300,7 @@ public class WeatherOps extends WeatherOpsBase {
         @Override
         public void sendResults(List<WeatherData> results) throws RemoteException {
             Log.i(TAG, "Callback received from bound async service.");
-            bindToUi(results.get(0));
+            bindResults(results);
         }
     }
 

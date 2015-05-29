@@ -32,6 +32,14 @@
             android:layout_weight="1"
             android:onClick="getWeatherSync" />
 
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/async_button"
+            android:id="@+id/button"
+            android:layout_weight="1"
+            android:onClick="getWeatherAsync" />
+
         <ProgressBar
             style="?android:attr/progressBarStyleSmall"
             android:layout_width="wrap_content"
