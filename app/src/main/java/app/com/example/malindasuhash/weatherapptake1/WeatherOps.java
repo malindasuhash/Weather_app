@@ -14,7 +14,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.List;
 
 import app.com.example.malindasuhash.weatherapptake1.activities.WeatherActivity;
@@ -177,12 +176,7 @@ public class WeatherOps extends WeatherOpsBase {
 
         mProgressBar.get().setVisibility(mAsyncTaskStillExecuting ? View.VISIBLE : View.INVISIBLE);
 
-        ArrayList<WeatherData> data = new ArrayList<>();
-
-        if (mSyncWeatherData != null)
-            data.add(mSyncWeatherData);
-
-        bind(data);
+        bindToUi(mSyncWeatherData);
     }
 
     private void bindResults(final List<WeatherData> data)
@@ -190,6 +184,7 @@ public class WeatherOps extends WeatherOpsBase {
         mWeatherActivity.get().runOnUiThread(new Runnable() {
             @Override
             public void run() {
+
                 bind(data);
             }
         });
@@ -201,27 +196,39 @@ public class WeatherOps extends WeatherOpsBase {
             bindToUi(data.get(0));
             mSyncWeatherData = data.get(0);
         } else {
-            Toast.makeText(mWeatherActivity.get(), "No data", Toast.LENGTH_LONG).show();
-        }
-        if (mSyncWeatherData != null)
-        {
+            mSyncWeatherData = null;
             bindToUi(mSyncWeatherData);
+            reset();
+            Toast.makeText(mWeatherActivity.get(), mWeatherActivity.get().getString(R.string.sorry_no_data), Toast.LENGTH_LONG).show();
         }
     }
 
     private void bindToUi(WeatherData data)
     {
-        Log.i(TAG, "Binding weather data to UI " + data);
-        mWeatherName.get().setText(data.getName());
-        mWeatherSpeed.get().setText(Formatter.formatSpeed(data.getSpeed()));
-        mWeatherDeg.get().setText(Double.toString(data.getDeg()));
-        mWeatherTemp.get().setText(Double.toString(data.getTemp()));
-        mWeatherHumidity.get().setText(Formatter.formatHumidity(data.getHumidity()));
-        mWeatherSunrise.get().setText(Long.toString(data.getSunrise()));
-        mWeatherSunset.get().setText(Long.toString(data.getSunset()));
+        if (data != null) {
+            Log.i(TAG, "Binding weather data to UI " + data);
+            mWeatherName.get().setText(data.getName());
+            mWeatherSpeed.get().setText(Formatter.formatSpeed(data.getSpeed()));
+            mWeatherDeg.get().setText(Double.toString(data.getDeg()));
+            mWeatherTemp.get().setText(Double.toString(data.getTemp()));
+            mWeatherHumidity.get().setText(Formatter.formatHumidity(data.getHumidity()));
+            mWeatherSunrise.get().setText(Long.toString(data.getSunrise()));
+            mWeatherSunset.get().setText(Long.toString(data.getSunset()));
+        }
 
         mProgressBar.get().setVisibility(View.INVISIBLE);
-        mAsyncTaskStillExecuting = true;
+        mAsyncTaskStillExecuting = false;
+    }
+
+    private void reset()
+    {
+        mWeatherName.get().setText("");
+        mWeatherSpeed.get().setText("");
+        mWeatherDeg.get().setText("");
+        mWeatherTemp.get().setText("");
+        mWeatherHumidity.get().setText("");
+        mWeatherSunrise.get().setText("");
+        mWeatherSunset.get().setText("");
     }
 
     /**
@@ -232,11 +239,9 @@ public class WeatherOps extends WeatherOpsBase {
     {
         if (useSyncService)
         {
-            mProgressBar.get().setVisibility(View.VISIBLE);
             Log.i(TAG, "Stating the async task.");
             WeatherGetterAsyncTask weatherGetterAsyncTask = new WeatherGetterAsyncTask(state, mWeatherCall);
             weatherGetterAsyncTask.execute(getLocation());
-            mAsyncTaskStillExecuting = true;
         }
         else
         {
@@ -249,6 +254,9 @@ public class WeatherOps extends WeatherOpsBase {
                 e.printStackTrace();
             }
         }
+
+        mProgressBar.get().setVisibility(View.VISIBLE);
+        mAsyncTaskStillExecuting = true;
     }
 
     /**

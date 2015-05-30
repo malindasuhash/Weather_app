@@ -23,12 +23,13 @@
         <service
             android:name=".services.WeatherServiceSync"
             android:enabled="true"
+            android:process=":sync"
             android:exported="false" >
         </service>
         <service
             android:name=".services.WeatherServiceAsync"
             android:enabled="true"
-            android:process=":remote2"
+            android:process=":async"
             android:exported="false" >
         </service>
     </application>
