@@ -33,6 +33,9 @@ public class WeatherActivity extends Activity {
 
         handleConfigurationChanges();
         Log.i(TAG, "Configuration change handling is invoked");
+
+        Log.i(TAG, "Starting the services.");
+        mWeatherOps.start();
     }
 
     public void getWeatherSync(View view) {
@@ -46,18 +49,13 @@ public class WeatherActivity extends Activity {
         mWeatherOps.getCurrentWeatherAsync();
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        mWeatherOps.start();
-    }
 
     @Override
-    protected void onStop() {
-        super.onStop();
-
+    protected void onDestroy() {
         mWeatherOps.stop();
+
+        Log.i(TAG, "Killed the service because the activity is going away.");
+        super.onDestroy();
     }
 
     @Override

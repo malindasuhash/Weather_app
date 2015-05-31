@@ -113,7 +113,9 @@ public class WeatherOps extends WeatherOpsBase {
             getDataFromService(true);
         }
         else {
-            bindToUi(cacheData);
+            bindToUi(cacheData, false);
+            Toast.makeText(mWeatherActivity.get(),
+                    mWeatherActivity.get().getString(R.string.from_cache), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -128,7 +130,9 @@ public class WeatherOps extends WeatherOpsBase {
             getDataFromService(false);
         }
         else {
-            bindToUi(cacheData);
+            bindToUi(cacheData, false);
+            Toast.makeText(mWeatherActivity.get(),
+                    mWeatherActivity.get().getString(R.string.from_cache), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -176,7 +180,7 @@ public class WeatherOps extends WeatherOpsBase {
 
         mProgressBar.get().setVisibility(mAsyncTaskStillExecuting ? View.VISIBLE : View.INVISIBLE);
 
-        bindToUi(mSyncWeatherData);
+        bindToUi(mSyncWeatherData, true);
     }
 
     private void bindResults(final List<WeatherData> data)
@@ -193,31 +197,37 @@ public class WeatherOps extends WeatherOpsBase {
     private void bind(List<WeatherData> data) {
         if (data != null && data.size() > 0) {
             mCacheManager.set(data.get(0).getName(), data.get(0));
-            bindToUi(data.get(0));
+            bindToUi(data.get(0), false);
             mSyncWeatherData = data.get(0);
         } else {
             mSyncWeatherData = null;
-            bindToUi(mSyncWeatherData);
+            bindToUi(mSyncWeatherData, false);
             reset();
-            Toast.makeText(mWeatherActivity.get(), mWeatherActivity.get().getString(R.string.sorry_no_data), Toast.LENGTH_LONG).show();
+            Toast.makeText(mWeatherActivity.get(),
+                    mWeatherActivity.get().getString(R.string.sorry_no_data), Toast.LENGTH_LONG).show();
         }
     }
 
-    private void bindToUi(WeatherData data)
+    private void bindToUi(WeatherData data, boolean onloading)
     {
         if (data != null) {
             Log.i(TAG, "Binding weather data to UI " + data);
             mWeatherName.get().setText(data.getName());
             mWeatherSpeed.get().setText(Formatter.formatSpeed(data.getSpeed()));
             mWeatherDeg.get().setText(Double.toString(data.getDeg()));
-            mWeatherTemp.get().setText(Double.toString(data.getTemp()));
+            mWeatherTemp.get().setText(Formatter.formatTemp(data.getTemp()));
             mWeatherHumidity.get().setText(Formatter.formatHumidity(data.getHumidity()));
-            mWeatherSunrise.get().setText(Long.toString(data.getSunrise()));
-            mWeatherSunset.get().setText(Long.toString(data.getSunset()));
+            mWeatherSunrise.get().setText(Formatter.formatDate(data.getSunrise()));
+            mWeatherSunset.get().setText(Formatter.formatDate(data.getSunset()));
         }
 
-        mProgressBar.get().setVisibility(View.INVISIBLE);
-        mAsyncTaskStillExecuting = false;
+        if (onloading && mAsyncTaskStillExecuting) {
+            mProgressBar.get().setVisibility(View.VISIBLE);
+        } else
+        {
+            mProgressBar.get().setVisibility(View.INVISIBLE);
+            mAsyncTaskStillExecuting = false;
+        }
     }
 
     private void reset()
@@ -265,14 +275,14 @@ public class WeatherOps extends WeatherOpsBase {
     private void bindToSyncService()
     {
         Log.i(TAG, "Binding to the Sync weather service.");
-        Intent intent = WeatherServiceSync.makeIntent(mWeatherActivity.get());
+        Intent intent = WeatherServiceSync.makeIntent(mWeatherActivity.get().getApplicationContext());
         mWeatherActivity.get().bindService(intent, mSyncServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
     private void bindToASyncService()
     {
         Log.i(TAG, "Binding to the Async weather service.");
-        Intent intent = WeatherServiceAsync.makeIntent(mWeatherActivity.get());
+        Intent intent = WeatherServiceAsync.makeIntent(mWeatherActivity.get().getApplicationContext());
         mWeatherActivity.get().bindService(intent, mASyncserviceConnection, Context.BIND_AUTO_CREATE);
     }
 
@@ -281,10 +291,10 @@ public class WeatherOps extends WeatherOpsBase {
      */
     private void unbindFromSyncService()
     {
-        if (mSyncServiceConnection != null) // To ensure we are still connected.
+        if (mSyncServiceConnection != null && !mWeatherActivity.get().isChangingConfigurations()) // To ensure we are still connected.
         {
             Log.i(TAG, "unbinding from the Sync weather service.");
-            mWeatherActivity.get().unbindService(mSyncServiceConnection);
+            mWeatherActivity.get().getApplicationContext().unbindService(mSyncServiceConnection);
         }
     }
 
@@ -293,10 +303,10 @@ public class WeatherOps extends WeatherOpsBase {
      */
     private void unbindFromAsyncService()
     {
-        if (mASyncserviceConnection != null)
+        if (mASyncserviceConnection != null && !mWeatherActivity.get().isChangingConfigurations())
         {
             Log.i(TAG, "unbinding from the Sync weather service.");
-            mWeatherActivity.get().unbindService(mASyncserviceConnection);
+            mWeatherActivity.get().getApplicationContext().unbindService(mASyncserviceConnection);
         }
     }
 

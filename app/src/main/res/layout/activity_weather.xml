@@ -41,7 +41,7 @@
             android:onClick="getWeatherAsync" />
 
         <ProgressBar
-            style="?android:attr/progressBarStyleSmall"
+            style="?android:attr/progressBarStyleLarge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/progress"

@@ -15,4 +15,5 @@
     <string name="weather_sunrise">Sunrise</string>
     <string name="weather_sunset_title">Sunset</string>
     <string name="sorry_no_data">Sorry no data was found.</string>
+    <string name="from_cache">From cache!</string>
 </resources>
