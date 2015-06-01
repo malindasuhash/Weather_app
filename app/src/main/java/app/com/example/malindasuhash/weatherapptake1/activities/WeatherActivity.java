@@ -1,6 +1,8 @@
 package app.com.example.malindasuhash.weatherapptake1.activities;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -54,7 +56,7 @@ public class WeatherActivity extends Activity {
     protected void onDestroy() {
         mWeatherOps.stop();
 
-        Log.i(TAG, "Killed the service because the activity is going away.");
+        Log.i(TAG, "Activity is going away!.");
         super.onDestroy();
     }
 
@@ -74,6 +76,9 @@ public class WeatherActivity extends Activity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            Intent showGitHub = new Intent(Intent.ACTION_VIEW);
+            showGitHub.setData(Uri.parse("https://github.com/malindasuhash"));
+            this.startActivity(showGitHub);
             return true;
         }
 
