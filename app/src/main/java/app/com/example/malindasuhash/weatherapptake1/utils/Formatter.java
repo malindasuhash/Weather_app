@@ -35,4 +35,8 @@ public class Formatter {
 
         return date.toString();
     }
+
+    public static String formatDegrees(double deg) {
+        return Double.toString(deg) + " deg";
+    }
 }

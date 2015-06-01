@@ -17,12 +17,9 @@ public abstract class WeatherOpsBase {
 
     protected WeakReference<WeatherActivity> mWeatherActivity;
 
-    protected WeakReference<EditText> mLocation;
-
     public WeatherOpsBase(WeatherActivity weatherActivity)
     {
         this.mWeatherActivity = new WeakReference<>(weatherActivity);
-        this.mLocation = new WeakReference<>((EditText) mWeatherActivity.get().findViewById(R.id.location));
     }
 
     public void getCurrentWeather()
@@ -60,14 +57,11 @@ public abstract class WeatherOpsBase {
         // NOP for the moment.
     }
 
-    protected String getLocation()
-    {
-        return mLocation.get().getText().toString().trim();
-    }
+    protected abstract String getLocation();
 
     private boolean validate()
     {
-        String location = mLocation.get().getText().toString();
+        String location = getLocation();
 
         Log.i(TAG, "Validating " + location);
 
